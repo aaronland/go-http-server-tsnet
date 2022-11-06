@@ -8,6 +8,11 @@ This package creates a Tailscale virtual private service for HTTP resources. It 
 
 This is work in progress. It sorta-seems-to-nearly-work, I think.
 
+### Known-knowns
+
+* Automagic TLS (port 443) certificates don't work with errors whose words I understand but not their meaning.
+* Under the hood there is extra undocumented hoop-jumping to make passing TS auth keys as query parameters (to the server URI constructor) work.
+
 ## Example
 
 ```
