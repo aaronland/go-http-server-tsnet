@@ -2,9 +2,80 @@
 
 Experimental Tailscale `tsnet` implementation of the `aaronland/go-http-server` interfaces.
 
+This package creates a Tailscale virtual private service for HTTP resources. It wraps all the `http.Handler` instances in a middleware wrapper that derives and stores the Tailscale user and machine that is accessing the server.
+
 ## Important
 
 This is work in progress. It sorta-seems-to-nearly-work, I think.
+
+## Example
+
+```
+$> go run cmd/example/main.go \
+	-server-uri 'tsnet://testing:80?auth-key={TS_AUTH_KEY}'
+```
+
+Or:
+
+```
+package main
+
+import (
+	"context"
+	"flag"
+	"github.com/aaronland/go-http-server"
+	_ "github.com/aaronland/go-http-server-tsnet"
+	"github.com/aaronland/go-http-server-tsnet/http/www"
+	"net/http"
+)
+
+func main() {
+
+	server_uri := flag.String("server-uri", "tsnet://testing:80", "A valid aaronland/go-http-server URI.")
+	flag.Parse()
+
+	ctx := context.Background()
+	s, _ := server.NewServer(ctx, *server_uri)
+
+	handler := www.ExampleHandler()
+
+	mux := http.NewServeMux()
+	mux.Handle("/", handler)
+
+	log.Printf("Listening on %s", s.Address())
+
+	s.ListenAndServe(ctx, mux)
+}
+```
+
+And:
+
+```
+package www
+
+import (
+	"fmt"
+	"github.com/aaronland/go-http-server-tsnet"
+	"net/http"
+)
+
+func ExampleHandler() http.Handler {
+
+	fn := func(rsp http.ResponseWriter, req *http.Request) {
+
+		who, _ := tsnet.GetWhois(req)
+
+		login_name := who.UserProfile.LoginName
+		computed_name := who.Node.ComputedName
+
+		msg := fmt.Sprintf("Hello, %s (%s)", login_name, computed_name)
+		rsp.Write([]byte(msg))
+	}
+
+	h := http.HandlerFunc(fn)
+	return h
+}
+```
 
 ## See also
 

@@ -3,24 +3,12 @@ package main
 import (
 	"context"
 	"flag"
-	"fmt"
 	"github.com/aaronland/go-http-server"
 	_ "github.com/aaronland/go-http-server-tsnet"
+	"github.com/aaronland/go-http-server-tsnet/http/www"
 	"log"
 	"net/http"
 )
-
-func NewHandler() http.Handler {
-
-	fn := func(rsp http.ResponseWriter, req *http.Request) {
-		log.Println("HELLO", req.Host)
-		msg := fmt.Sprintf("Hello, %s", req.Host)
-		rsp.Write([]byte(msg))
-	}
-
-	h := http.HandlerFunc(fn)
-	return h
-}
 
 func main() {
 
@@ -36,9 +24,9 @@ func main() {
 		log.Fatalf("Unable to create server (%s), %v", *server_uri, err)
 	}
 
-	mux := http.NewServeMux()
-	handler := NewHandler()
+	handler := www.ExampleHandler()
 
+	mux := http.NewServeMux()
 	mux.Handle("/", handler)
 
 	log.Printf("Listening on %s", s.Address())

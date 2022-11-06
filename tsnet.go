@@ -13,8 +13,11 @@ import (
 	"net/url"
 	"os"
 	"tailscale.com/client/tailscale"
+	"tailscale.com/client/tailscale/apitype"
 	"tailscale.com/tsnet"
 )
+
+const WHOIS_CONTEXT_KEY string = "x-urn:aaronland:tsnet#whois"
 
 func init() {
 	ctx := context.Background()
@@ -87,7 +90,7 @@ func (s *TSNetServer) ListenAndServe(ctx context.Context, mux http.Handler) erro
 	// https://testing
 	// 2022/11/06 11:01:23 http: TLS handshake error from a.b.c.d:61940: 400 Bad Request: invalid domain
 
-	// https://{IP}
+	// https://{TAILSCALE_IP}
 	// 2022/11/06 11:01:46 http: TLS handshake error from a.b.c.d:53770: no SNI ServerName
 
 	if s.port == "443" {
@@ -114,8 +117,7 @@ func (s *TSNetServer) ListenAndServe(ctx context.Context, mux http.Handler) erro
 				return
 			}
 
-			who_ctx := context.WithValue(ctx, "who", who)
-			who_req := req.WithContext(who_ctx)
+			who_req := SetWhois(req, who)
 
 			next.ServeHTTP(rsp, who_req)
 		}
@@ -134,4 +136,33 @@ func (s *TSNetServer) ListenAndServe(ctx context.Context, mux http.Handler) erro
 
 func (s *TSNetServer) Address() string {
 	return fmt.Sprintf("%s:%s", s.hostname, s.port)
+}
+
+func SetWhois(req *http.Request, who *apitype.WhoIsResponse) *http.Request {
+
+	ctx := req.Context()
+
+	who_ctx := context.WithValue(ctx, WHOIS_CONTEXT_KEY, who)
+	who_req := req.WithContext(who_ctx)
+
+	return who_req
+}
+func GetWhois(req *http.Request) (*apitype.WhoIsResponse, error) {
+
+	ctx := req.Context()
+
+	v := ctx.Value(WHOIS_CONTEXT_KEY)
+
+	if v == nil {
+		return nil, fmt.Errorf("Unable to determine whois context")
+	}
+
+	switch v.(type) {
+	case *apitype.WhoIsResponse:
+		// pass
+	default:
+		return nil, fmt.Errorf("Invalid whois context")
+	}
+
+	return v.(*apitype.WhoIsResponse), nil
 }
