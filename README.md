@@ -4,7 +4,7 @@ Experimental Tailscale `tsnet` implementation of the `aaronland/go-http-server` 
 
 ## Important
 
-This is work in progress. It sorta-seems-to-but-doesn't-quite-work yet.
+This is work in progress. It sorta-seems-to-nearly-work, I think.
 
 ## See also
 

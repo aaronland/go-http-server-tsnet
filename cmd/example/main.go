@@ -13,7 +13,7 @@ import (
 func NewHandler() http.Handler {
 
 	fn := func(rsp http.ResponseWriter, req *http.Request) {
-
+		log.Println("HELLO", req.Host)
 		msg := fmt.Sprintf("Hello, %s", req.Host)
 		rsp.Write([]byte(msg))
 	}
