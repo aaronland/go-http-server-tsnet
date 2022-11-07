@@ -1,3 +1,4 @@
+// example is a command-line application demonstrating how a tsnet-enabled HTTP server works.
 package main
 
 import (

@@ -6,6 +6,8 @@ import (
 	"net/http"
 )
 
+// ExampleHandler provides an `http.Handler` that print the login and computed name of
+// the Tailscale user invoking the handler.
 func ExampleHandler() http.Handler {
 
 	fn := func(rsp http.ResponseWriter, req *http.Request) {

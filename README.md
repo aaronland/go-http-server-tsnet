@@ -15,6 +15,8 @@ This package creates a Tailscale virtual private service for HTTP resources. It 
 
 ## Example
 
+_Error handling removed for the sake of brevity._
+
 ```
 $> go run cmd/example/main.go \
 	-server-uri 'tsnet://testing:80?auth-key={TS_AUTH_KEY}'
@@ -48,7 +50,6 @@ func main() {
 	mux.Handle("/", handler)
 
 	log.Printf("Listening on %s", s.Address())
-
 	s.ListenAndServe(ctx, mux)
 }
 ```
