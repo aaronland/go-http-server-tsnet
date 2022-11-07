@@ -17,6 +17,7 @@ import (
 	"tailscale.com/tsnet"
 )
 
+// WHOIS_CONTEXT_KEY is the key used to store `apitype.WhoIsResponse` instances in a `context.Context` instance.
 const WHOIS_CONTEXT_KEY string = "x-urn:aaronland:tsnet#whois"
 
 func init() {
@@ -24,6 +25,7 @@ func init() {
 	server.RegisterServer(ctx, "tsnet", NewTSNetServer)
 }
 
+// TSNServer implements the `Server` interface for a `net/http` server running as a Tailscale virtual private service.
 type TSNetServer struct {
 	server.Server
 	tsnet_server *tsnet.Server
@@ -31,6 +33,13 @@ type TSNetServer struct {
 	port         string
 }
 
+// NewTSNetServer returns a new `TSNetServer` instance configured by 'uri' which is
+// expected to be defined in the form of:
+//
+//	tsnet://{HOSTNAME}:{PORT}?{PARAMETERS}
+//
+// Valid parameters are:
+// * `auth-key` is a valid Tailscale auth key. If absent it is assumed that a valid `TS_AUTH_KEY` environment variable has already been set.
 func NewTSNetServer(ctx context.Context, uri string) (server.Server, error) {
 
 	u, err := url.Parse(uri)
@@ -74,6 +83,10 @@ func NewTSNetServer(ctx context.Context, uri string) (server.Server, error) {
 	return s, nil
 }
 
+// ListenAndServe starts the server and listens for requests using 'mux' for routing. Additionally each handler in mux
+// will be wrapped by a middleware handler that will ensure a Tailscale `api.WhoIsResponse` instance can be derived from
+// the current request and then store that value in the request's context. This value can be retrieved using the `GetWhoIs`
+// method.
 func (s *TSNetServer) ListenAndServe(ctx context.Context, mux http.Handler) error {
 
 	// It is important to include the hostname here
@@ -117,8 +130,7 @@ func (s *TSNetServer) ListenAndServe(ctx context.Context, mux http.Handler) erro
 				return
 			}
 
-			who_req := SetWhois(req, who)
-
+			who_req := SetWhoIs(req, who)
 			next.ServeHTTP(rsp, who_req)
 		}
 
@@ -134,11 +146,22 @@ func (s *TSNetServer) ListenAndServe(ctx context.Context, mux http.Handler) erro
 	return nil
 }
 
+// Address returns the fully-qualified URI where the server instance can be contacted.
 func (s *TSNetServer) Address() string {
-	return fmt.Sprintf("%s:%s", s.hostname, s.port)
+
+	var address string
+
+	if s.port == "443" {
+		address = fmt.Sprintf("https://%s", s.hostname)
+	} else {
+		address = fmt.Sprintf("http://%s:%s", s.hostname, s.port)
+	}
+
+	return address
 }
 
-func SetWhois(req *http.Request, who *apitype.WhoIsResponse) *http.Request {
+// SetWhoIs will store 'who' in 'req.Context'.
+func SetWhoIs(req *http.Request, who *apitype.WhoIsResponse) *http.Request {
 
 	ctx := req.Context()
 
@@ -147,7 +170,9 @@ func SetWhois(req *http.Request, who *apitype.WhoIsResponse) *http.Request {
 
 	return who_req
 }
-func GetWhois(req *http.Request) (*apitype.WhoIsResponse, error) {
+
+// GetWhoIs will return the Tailscale `apitype.WhoIsResponse` instance stored in the 'req.Context'.
+func GetWhoIs(req *http.Request) (*apitype.WhoIsResponse, error) {
 
 	ctx := req.Context()
 

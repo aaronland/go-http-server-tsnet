@@ -10,7 +10,7 @@ func ExampleHandler() http.Handler {
 
 	fn := func(rsp http.ResponseWriter, req *http.Request) {
 
-		who, err := tsnet.GetWhois(req)
+		who, err := tsnet.GetWhoIs(req)
 
 		if err != nil {
 			http.Error(rsp, err.Error(), http.StatusInternalServerError)

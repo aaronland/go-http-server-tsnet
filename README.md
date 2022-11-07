@@ -4,11 +4,11 @@ Experimental Tailscale `tsnet` implementation of the `aaronland/go-http-server` 
 
 This package creates a Tailscale virtual private service for HTTP resources. It wraps all the `http.Handler` instances in a middleware wrapper that derives and stores the Tailscale user and machine that is accessing the server.
 
-## Important
+## Documentation
 
-This is work in progress. It sorta-seems-to-nearly-work, I think.
+[![Go Reference](https://pkg.go.dev/badge/github.com/aaronland/go-http-server-tsnet.svg)](https://pkg.go.dev/github.com/aaronland/go-http-server-tsnet)
 
-### Known-knowns
+## Known-knowns
 
 * Automagic TLS (port 443) certificates don't work with errors whose words I understand but not their meaning.
 * Under the hood there is extra undocumented hoop-jumping to make passing TS auth keys as query parameters (to the server URI constructor) work.
@@ -68,7 +68,10 @@ func ExampleHandler() http.Handler {
 
 	fn := func(rsp http.ResponseWriter, req *http.Request) {
 
-		who, _ := tsnet.GetWhois(req)
+		// tsnet.SetWhoIs is called/assigned by the middleware handler
+		// implemented in tsnet.go
+		
+		who, _ := tsnet.GetWhoIs(req)
 
 		login_name := who.UserProfile.LoginName
 		computed_name := who.Node.ComputedName
