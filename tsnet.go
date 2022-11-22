@@ -31,6 +31,7 @@ type TSNetServer struct {
 	tsnet_server *tsnet.Server
 	hostname     string
 	port         string
+	allowed_hosts []string
 }
 
 // NewTSNetServer returns a new `TSNetServer` instance configured by 'uri' which is
@@ -74,10 +75,13 @@ func NewTSNetServer(ctx context.Context, uri string) (server.Server, error) {
 
 	}
 
+	allowed_hosts := q["allowed-host"]
+	
 	s := &TSNetServer{
 		tsnet_server: tsnet_server,
 		hostname:     hostname,
 		port:         port,
+		allowed_hosts: allowed_hosts,
 	}
 
 	return s, nil
@@ -123,6 +127,25 @@ func (s *TSNetServer) ListenAndServe(ctx context.Context, mux http.Handler) erro
 
 		fn := func(rsp http.ResponseWriter, req *http.Request) {
 
+			if len(s.allowed_hosts) > 0 {
+
+				is_allowed := false
+				req_host := req.Host
+
+				for _, h := range s.allowed_hosts {
+
+					if req_host == h {
+						is_allowed = true
+						break
+					}
+				}
+
+				if !is_allowed {
+					http.Error(rsp, "Forbidden", http.StatusForbidden)
+					return
+				}
+			}
+			
 			who, err := lc.WhoIs(req.Context(), req.RemoteAddr)
 
 			if err != nil {
