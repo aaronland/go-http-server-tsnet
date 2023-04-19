@@ -14,7 +14,7 @@ import (
 	"net/url"
 	"os"
 	"strconv"
-	
+
 	"github.com/aaronland/go-http-server"
 	"tailscale.com/client/tailscale"
 	"tailscale.com/client/tailscale/apitype"
@@ -139,7 +139,7 @@ func (s *TSNetServer) ListenAndServe(ctx context.Context, mux http.Handler) erro
 		listener = l
 	} else {
 
-		listener, err := s.tsnet_server.Listen("tcp", addr)
+		l, err := s.tsnet_server.Listen("tcp", addr)
 
 		if err != nil {
 			return fmt.Errorf("Failed to announce server, %w", err)
@@ -153,10 +153,12 @@ func (s *TSNetServer) ListenAndServe(ctx context.Context, mux http.Handler) erro
 
 		if s.port == "443" {
 
-			listener = tls.NewListener(listener, &tls.Config{
+			l = tls.NewListener(l, &tls.Config{
 				GetCertificate: tailscale.GetCertificate,
 			})
 		}
+
+		listener = l
 	}
 
 	defer listener.Close()
