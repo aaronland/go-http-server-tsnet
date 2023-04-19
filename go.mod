@@ -1,6 +1,6 @@
 module github.com/aaronland/go-http-server-tsnet
 
-go 1.19
+go 1.18
 
 require (
 	github.com/aaronland/go-http-server v1.0.1
