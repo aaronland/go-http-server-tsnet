@@ -2,8 +2,9 @@ package www
 
 import (
 	"fmt"
-	"github.com/aaronland/go-http-server-tsnet"
 	"net/http"
+
+	"github.com/aaronland/go-http-server-tsnet"
 )
 
 // ExampleHandler provides an `http.Handler` that print the login and computed name of
@@ -16,6 +17,12 @@ func ExampleHandler() http.Handler {
 
 		if err != nil {
 			http.Error(rsp, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		if who.UserProfile == nil {
+			http.Error(rsp, "Forbidden", http.StatusForbidden)
+			return
 		}
 
 		login_name := who.UserProfile.LoginName

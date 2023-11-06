@@ -4,11 +4,12 @@ package main
 import (
 	"context"
 	"flag"
+	"log"
+	"net/http"
+
 	"github.com/aaronland/go-http-server"
 	_ "github.com/aaronland/go-http-server-tsnet"
 	"github.com/aaronland/go-http-server-tsnet/http/www"
-	"log"
-	"net/http"
 )
 
 func main() {
